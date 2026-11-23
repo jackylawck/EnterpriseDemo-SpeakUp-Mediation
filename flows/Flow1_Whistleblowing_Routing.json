@@ -1,0 +1,268 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "flowName": "EnterpriseDemo-Whistleblowing-Routing-Flow",
+    "version": "1.0.0",
+    "author": "羅子淇 (Jacky Law)",
+    "governanceAlignment": [
+      "ISO 37002:2021 (Impartiality & Anti-Retaliation)",
+      "HK PDPO Cap. 486 (DPP4 Secure Outputs Log Redaction)",
+      "ISO/IEC 27001 & 27701 (RBAC List Isolation)"
+    ],
+    "sanitizationNotice": "All Tenant IDs, Form GUIDs, SharePoint URLs, and emails are synthetic demo placeholders."
+  },
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    },
+    "$authentication": {
+      "defaultValue": {},
+      "type": "SecureObject"
+    }
+  },
+  "triggers": {
+    "When_a_new_response_is_submitted": {
+      "type": "OpenApiConnectionWebhook",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_microsoftforms",
+          "operationId": "CreateFormWebhook",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_microsoftforms"
+        },
+        "parameters": {
+          "form_id": "00000000-0000-0000-0000-000000000001"
+        },
+        "authentication": "@parameters('$authentication')"
+      },
+      "metadata": {
+        "displayName": "Trigger: Demo-Form-01 (Anonymous Whistleblowing Intake)"
+      }
+    }
+  },
+  "actions": {
+    "Get_response_details": {
+      "runAfter": {},
+      "type": "OpenApiConnection",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_microsoftforms",
+          "operationId": "GetFormResponseById",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_microsoftforms"
+        },
+        "parameters": {
+          "form_id": "00000000-0000-0000-0000-000000000001",
+          "response_id": "@triggerOutputs()?['body/resourceData/responseId']"
+        },
+        "authentication": "@parameters('$authentication')"
+      },
+      "runtimeConfiguration": {
+        "secureData": {
+          "properties": [
+            "outputs"
+          ]
+        }
+      },
+      "metadata": {
+        "displayName": "Get Response Details (Secure Outputs Enabled for PDPO DPP4)"
+      }
+    },
+    "Condition_COI_Implicates_HR": {
+      "runAfter": {
+        "Get_response_details": [
+          "Succeeded"
+        ]
+      },
+      "type": "If",
+      "expression": {
+        "and": [
+          {
+            "contains": [
+              "@outputs('Get_response_details')?['body/q02_implicates_hr']",
+              "是"
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "Create_Item_Boss_Only_Cases": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_sharepointonline",
+              "operationId": "PostItem",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+            },
+            "parameters": {
+              "dataset": "https://demo-tenant.sharepoint.com/sites/SpeakUp-Mediation-Portal",
+              "table": "Boss_Only_Cases",
+              "item": {
+                "Title": "WB-BOSS-@{triggerOutputs()?['body/resourceData/responseId']}",
+                "SubmissionMode": "@outputs('Get_response_details')?['body/q01_submission_mode']",
+                "Category": "@outputs('Get_response_details')?['body/q03_category']",
+                "Urgency": "@outputs('Get_response_details')?['body/q04_urgency']",
+                "IncidentDetails": "@outputs('Get_response_details')?['body/q05_details']",
+                "EvidenceNote": "@outputs('Get_response_details')?['body/q06_evidence']",
+                "ContactInfo": "@outputs('Get_response_details')?['body/q07_contact']",
+                "CaseStatus": {
+                  "Value": "Pending"
+                }
+              }
+            },
+            "authentication": "@parameters('$authentication')"
+          },
+          "metadata": {
+            "displayName": "Write to Isolated Executive List (Boss_Only_Cases)"
+          }
+        },
+        "Post_Teams_Adaptive_Card_Managing_Director": {
+          "runAfter": {
+            "Create_Item_Boss_Only_Cases": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_teams",
+              "operationId": "PostCardToConversation",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams"
+            },
+            "parameters": {
+              "poster": "Flow bot",
+              "location": "Chat with Flow bot",
+              "body/recipient": "md@companydemo.com",
+              "body/messageBody": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.4",
+                "body": [
+                  {
+                    "type": "TextBlock",
+                    "text": "🚨 Executive Confidential Whistleblowing Alert (COI Bypass Active)",
+                    "weight": "Bolder",
+                    "size": "Medium",
+                    "color": "Attention"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "This report implicates HR leadership. HR access has been automatically isolated.",
+                    "wrap": true,
+                    "isSubtle": true,
+                    "size": "Small"
+                  },
+                  {
+                    "type": "FactSet",
+                    "facts": [
+                      { "title": "Case ID:", "value": "@{outputs('Create_Item_Boss_Only_Cases')?['body/Title']}" },
+                      { "title": "Urgency:", "value": "@{outputs('Create_Item_Boss_Only_Cases')?['body/Urgency']}" },
+                      { "title": "Category:", "value": "@{outputs('Create_Item_Boss_Only_Cases')?['body/Category']}" }
+                    ]
+                  }
+                ],
+                "actions": [
+                  {
+                    "type": "Action.OpenUrl",
+                    "title": "Open Isolated Executive List",
+                    "url": "https://demo-tenant.sharepoint.com/sites/SpeakUp-Mediation-Portal/Lists/Boss_Only_Cases/AllItems.aspx"
+                  }
+                ]
+              }
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "else": {
+        "actions": {
+          "Create_Item_HR_Cases": {
+            "runAfter": {},
+            "type": "OpenApiConnection",
+            "inputs": {
+              "host": {
+                "connectionName": "shared_sharepointonline",
+                "operationId": "PostItem",
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+              },
+              "parameters": {
+                "dataset": "https://demo-tenant.sharepoint.com/sites/SpeakUp-Mediation-Portal",
+                "table": "HR_Cases",
+                "item": {
+                  "Title": "WB-HR-@{triggerOutputs()?['body/resourceData/responseId']}",
+                  "SubmissionMode": "@outputs('Get_response_details')?['body/q01_submission_mode']",
+                  "Category": "@outputs('Get_response_details')?['body/q03_category']",
+                  "Urgency": "@outputs('Get_response_details')?['body/q04_urgency']",
+                  "IncidentDetails": "@outputs('Get_response_details')?['body/q05_details']",
+                  "EvidenceNote": "@outputs('Get_response_details')?['body/q06_evidence']",
+                  "ContactInfo": "@outputs('Get_response_details')?['body/q07_contact']",
+                  "CaseStatus": {
+                    "Value": "Pending"
+                  }
+                }
+              },
+              "authentication": "@parameters('$authentication')"
+            },
+            "metadata": {
+              "displayName": "Write to Standard HR Whistleblowing List (HR_Cases)"
+            }
+          },
+          "Post_Teams_Adaptive_Card_HR_Head": {
+            "runAfter": {
+              "Create_Item_HR_Cases": [
+                "Succeeded"
+              ]
+            },
+            "type": "OpenApiConnection",
+            "inputs": {
+              "host": {
+                "connectionName": "shared_teams",
+                "operationId": "PostCardToConversation",
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams"
+              },
+              "parameters": {
+                "poster": "Flow bot",
+                "location": "Chat with Flow bot",
+                "body/recipient": "hr.head@companydemo.com",
+                "body/messageBody": {
+                  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                  "type": "AdaptiveCard",
+                  "version": "1.4",
+                  "body": [
+                    {
+                      "type": "TextBlock",
+                      "text": "📋 New Confidential Whistleblowing Report (HR Assigned)",
+                      "weight": "Bolder",
+                      "size": "Medium",
+                      "color": "Accent"
+                    },
+                    {
+                      "type": "FactSet",
+                      "facts": [
+                        { "title": "Case ID:", "value": "@{outputs('Create_Item_HR_Cases')?['body/Title']}" },
+                        { "title": "Urgency:", "value": "@{outputs('Create_Item_HR_Cases')?['body/Urgency']}" },
+                        { "title": "Category:", "value": "@{outputs('Create_Item_HR_Cases')?['body/Category']}" }
+                      ]
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "type": "Action.OpenUrl",
+                      "title": "Review in HR Cases List",
+                      "url": "https://demo-tenant.sharepoint.com/sites/SpeakUp-Mediation-Portal/Lists/HR_Cases/AllItems.aspx"
+                    }
+                  ]
+                }
+              },
+              "authentication": "@parameters('$authentication')"
+            }
+          }
+        }
+      },
+      "metadata": {
+        "displayName": "COI Gate: Route HR-Implicated Reports to Managing Director"
+      }
+    }
+  }
+}
