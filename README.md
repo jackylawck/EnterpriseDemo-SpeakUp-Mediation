@@ -1,5 +1,3 @@
-🌐 Language: **English** | [繁體中文 (香港)](./README.zh-TW.md)
-
 # EnterpriseDemo-SpeakUp-Mediation
 **Zero-License Enterprise Whistleblowing & Workplace Mediation Dual-Track Governance Portal**
 
