@@ -1,0 +1,273 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "flowName": "EnterpriseDemo-WorkplaceMediation-Intake-Flow",
+    "version": "1.0.0",
+    "author": "羅子淇 (Jacky Law)",
+    "governanceAlignment": [
+      "HK Mediation Ordinance Cap. 620 (Confidentiality & Without Prejudice)",
+      "ISO 37002:2021 (Cross-Track COI Escalation)",
+      "HK PDPO Cap. 486 (DPP4 Secure Outputs Log Redaction)"
+    ],
+    "sanitizationNotice": "All Tenant IDs, Form GUIDs, SharePoint URLs, and emails are synthetic demo placeholders."
+  },
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    },
+    "$authentication": {
+      "defaultValue": {},
+      "type": "SecureObject"
+    }
+  },
+  "triggers": {
+    "When_a_new_response_is_submitted": {
+      "type": "OpenApiConnectionWebhook",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_microsoftforms",
+          "operationId": "CreateFormWebhook",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_microsoftforms"
+        },
+        "parameters": {
+          "form_id": "00000000-0000-0000-0000-000000000002"
+        },
+        "authentication": "@parameters('$authentication')"
+      },
+      "metadata": {
+        "displayName": "Trigger: Demo-Form-02 (Authenticated Workplace Mediation Booking)"
+      }
+    }
+  },
+  "actions": {
+    "Get_response_details": {
+      "runAfter": {},
+      "type": "OpenApiConnection",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_microsoftforms",
+          "operationId": "GetFormResponseById",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_microsoftforms"
+        },
+        "parameters": {
+          "form_id": "00000000-0000-0000-0000-000000000002",
+          "response_id": "@triggerOutputs()?['body/resourceData/responseId']"
+        },
+        "authentication": "@parameters('$authentication')"
+      },
+      "runtimeConfiguration": {
+        "secureData": {
+          "properties": [
+            "outputs"
+          ]
+        }
+      },
+      "metadata": {
+        "displayName": "Get Response Details (Secure Outputs Enabled)"
+      }
+    },
+    "Condition_COI_Mediation_Implicates_HR": {
+      "runAfter": {
+        "Get_response_details": [
+          "Succeeded"
+        ]
+      },
+      "type": "If",
+      "expression": {
+        "and": [
+          {
+            "contains": [
+              "@outputs('Get_response_details')?['body/q02_coi_hr']",
+              "是"
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "Create_Item_MGT_CrossTrack_Escalation": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_sharepointonline",
+              "operationId": "PostItem",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+            },
+            "parameters": {
+              "dataset": "https://demo-tenant.sharepoint.com/sites/SpeakUp-Mediation-Portal",
+              "table": "Boss_Only_Cases",
+              "item": {
+                "Title": "MED-BOSS-@{triggerOutputs()?['body/resourceData/responseId']}",
+                "SubmissionMode": "Mediation Cross-Track Referral (Authenticated)",
+                "Category": "@outputs('Get_response_details')?['body/q04_dispute_category']",
+                "Urgency": "@outputs('Get_response_details')?['body/q03_safety_screening']",
+                "IncidentDetails": "@outputs('Get_response_details')?['body/q05_summary']",
+                "ContactInfo": "@outputs('Get_response_details')?['body/responder']",
+                "CaseStatus": {
+                  "Value": "Pending"
+                }
+              }
+            },
+            "authentication": "@parameters('$authentication')"
+          },
+          "metadata": {
+            "displayName": "Cross-Track Escalation to Boss_Only_Cases (MGT)"
+          }
+        },
+        "Post_Teams_Card_MGT_Escalation": {
+          "runAfter": {
+            "Create_Item_MGT_CrossTrack_Escalation": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_teams",
+              "operationId": "PostCardToConversation",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams"
+            },
+            "parameters": {
+              "poster": "Flow bot",
+              "location": "Chat with Flow bot",
+              "body/recipient": "md@companydemo.com",
+              "body/messageBody": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.4",
+                "body": [
+                  {
+                    "type": "TextBlock",
+                    "text": "⚠️ HR-Implicated Mediation Escalation Alert",
+                    "weight": "Bolder",
+                    "size": "Medium",
+                    "color": "Attention"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "A workplace mediation request implicating HR has been intercepted and isolated from HR access.",
+                    "wrap": true,
+                    "isSubtle": true,
+                    "size": "Small"
+                  },
+                  {
+                    "type": "FactSet",
+                    "facts": [
+                      { "title": "Case ID:", "value": "@{outputs('Create_Item_MGT_CrossTrack_Escalation')?['body/Title']}" },
+                      { "title": "Applicant:", "value": "@{outputs('Create_Item_MGT_CrossTrack_Escalation')?['body/ContactInfo']}" },
+                      { "title": "Category:", "value": "@{outputs('Create_Item_MGT_CrossTrack_Escalation')?['body/Category']}" }
+                    ]
+                  }
+                ],
+                "actions": [
+                  {
+                    "type": "Action.OpenUrl",
+                    "title": "Assess in Executive List",
+                    "url": "https://demo-tenant.sharepoint.com/sites/SpeakUp-Mediation-Portal/Lists/Boss_Only_Cases/AllItems.aspx"
+                  }
+                ]
+              }
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "else": {
+        "actions": {
+          "Create_Item_HRM_Mediation_Cases": {
+            "runAfter": {},
+            "type": "OpenApiConnection",
+            "inputs": {
+              "host": {
+                "connectionName": "shared_sharepointonline",
+                "operationId": "PostItem",
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+              },
+              "parameters": {
+                "dataset": "https://demo-tenant.sharepoint.com/sites/SpeakUp-Mediation-Portal",
+                "table": "Mediation_Cases",
+                "item": {
+                  "Title": "MED-@{triggerOutputs()?['body/resourceData/responseId']}",
+                  "ApplicantEmail": "@outputs('Get_response_details')?['body/responder']",
+                  "PrinciplesConfirmed": "@outputs('Get_response_details')?['body/q01_principles_ack']",
+                  "ImplicatesHR": "@outputs('Get_response_details')?['body/q02_coi_hr']",
+                  "SafetyScreening": "@outputs('Get_response_details')?['body/q03_safety_screening']",
+                  "DisputeCategory": "@outputs('Get_response_details')?['body/q04_dispute_category']",
+                  "Summary": "@outputs('Get_response_details')?['body/q05_summary']",
+                  "PreferredTimeSlot": "@outputs('Get_response_details')?['body/q06_timeslot']"
+                }
+              },
+              "authentication": "@parameters('$authentication')"
+            },
+            "metadata": {
+              "displayName": "Write to Confidential Mediation List (HRM)"
+            }
+          },
+          "Post_Teams_Card_HRM_Mediator": {
+            "runAfter": {
+              "Create_Item_HRM_Mediation_Cases": [
+                "Succeeded"
+              ]
+            },
+            "type": "OpenApiConnection",
+            "inputs": {
+              "host": {
+                "connectionName": "shared_teams",
+                "operationId": "PostCardToConversation",
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams"
+              },
+              "parameters": {
+                "poster": "Flow bot",
+                "location": "Chat with Flow bot",
+                "body/recipient": "hr.head@companydemo.com",
+                "body/messageBody": {
+                  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                  "type": "AdaptiveCard",
+                  "version": "1.4",
+                  "body": [
+                    {
+                      "type": "TextBlock",
+                      "text": "🤝 New Confidential Workplace Mediation Request",
+                      "weight": "Bolder",
+                      "size": "Medium",
+                      "color": "Good"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "text": "Applicant acknowledged Cap. 620 confidentiality rules. Schedule 1-on-1 Caucus session.",
+                      "wrap": true,
+                      "isSubtle": true,
+                      "size": "Small"
+                    },
+                    {
+                      "type": "FactSet",
+                      "facts": [
+                        { "title": "Case ID:", "value": "@{outputs('Create_Item_HRM_Mediation_Cases')?['body/Title']}" },
+                        { "title": "Applicant:", "value": "@{outputs('Create_Item_HRM_Mediation_Cases')?['body/ApplicantEmail']}" },
+                        { "title": "Category:", "value": "@{outputs('Create_Item_HRM_Mediation_Cases')?['body/DisputeCategory']}" },
+                        { "title": "Preferred Slot:", "value": "@{outputs('Create_Item_HRM_Mediation_Cases')?['body/PreferredTimeSlot']}" }
+                      ]
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "type": "Action.OpenUrl",
+                      "title": "Schedule Caucus in Mediation List",
+                      "url": "https://demo-tenant.sharepoint.com/sites/SpeakUp-Mediation-Portal/Lists/Mediation_Cases/AllItems.aspx"
+                    }
+                  ]
+                }
+              },
+              "authentication": "@parameters('$authentication')"
+            }
+          }
+        }
+      },
+      "metadata": {
+        "displayName": "COI Gate: Route Standard Mediation to Mediator vs. HR-Implicated to MD"
+      }
+    }
+  }
+}
