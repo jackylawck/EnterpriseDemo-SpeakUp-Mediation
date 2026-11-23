@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jackylawck.github.io/EnterpriseDemo-SpeakUp-Mediation/schemas/speakup_mediation_governance_schema.json",
+  "title": "EnterpriseDemo-SpeakUp-Mediation Governance & RBAC Schema",
+  "description": "Data model, Role-Based Access Control (RBAC) isolation matrix, and regulatory scope-out metadata for the Dual-Track Whistleblowing and Workplace Mediation Portal.",
+  "type": "object",
+  "required": [
+    "systemMetadata",
+    "sharePointLists",
+    "routingRules"
+  ],
+  "properties": {
+    "systemMetadata": {
+      "type": "object",
+      "properties": {
+        "repository": { "const": "EnterpriseDemo-SpeakUp-Mediation" },
+        "author": { "const": "羅子淇 (Jacky Law)" },
+        "architecturePattern": { "const": "Zero-License Dual-Track Governance Portal (Non-AI Deterministic)" },
+        "applicableFrameworks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [
+            "ISO 37002:2021",
+            "ISO/IEC 27001:2022",
+            "ISO/IEC 27701:2019",
+            "Hong Kong PDPO (Cap. 486)",
+            "Hong Kong Mediation Ordinance (Cap. 620)"
+          ]
+        },
+        "scopedOutRegulations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "regulation": { "type": "string" },
+              "reason": { "type": "string" }
+            }
+          },
+          "default": [
+            {
+              "regulation": "EU AI Act (Regulation (EU) 2024/1689)",
+              "reason": "System uses deterministic If/Else string matching with human-in-the-loop review; contains zero AI/ML algorithms."
+            },
+            {
+              "regulation": "ISO/IEC 42001:2023",
+              "reason": "No AI model training, inference, or drift monitoring lifecycle exists."
+            },
+            {
+              "regulation": "CAC Generative AI Regulations (Mainland China)",
+              "reason": "Zero generative AI capability; deployed strictly within private Hong Kong enterprise M365 tenancy."
+            }
+          ]
+        }
+      }
+    },
+    "sharePointLists": {
+      "type": "object",
+      "properties": {
+        "HR_Cases": {
+          "type": "object",
+          "description": "Standard whistleblowing cases not implicating HR leadership.",
+          "properties": {
+            "permissionInheritance": { "const": "Broken" },
+            "authorizedRoles": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["HR_Head", "Managing_Director_Admin"]
+            },
+            "casePrefix": { "const": "WB-HR-" }
+          }
+        },
+        "Boss_Only_Cases": {
+          "type": "object",
+          "description": "High-confidentiality isolated repository for HR-implicated whistleblowing and cross-track mediation escalations.",
+          "properties": {
+            "permissionInheritance": { "const": "Broken" },
+            "authorizedRoles": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["Managing_Director_Admin"]
+            },
+            "hrAccessBlocked": { "const": true },
+            "casePrefixes": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["WB-BOSS-", "MED-BOSS-"]
+            }
+          }
+        },
+        "Mediation_Cases": {
+          "type": "object",
+          "description": "Confidential workplace mediation requests governed by Cap. 620 principles; strictly excluded from HR personnel files.",
+          "properties": {
+            "permissionInheritance": { "const": "Broken" },
+            "authorizedRoles": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["Accredited_Mediator_HR_Head", "Managing_Director_Admin"]
+            },
+            "excludedFromPersonnelFile": { "const": true },
+            "casePrefix": { "const": "MED-" }
+          }
+        }
+      }
+    },
+    "routingRules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sourceForm", "coiImplicatesHR", "targetList", "notificationRecipient"],
+        "properties": {
+          "sourceForm": { "enum": ["Demo-Form-01-Whistleblowing", "Demo-Form-02-Mediation"] },
+          "coiImplicatesHR": { "type": "boolean" },
+          "targetList": { "enum": ["HR_Cases", "Boss_Only_Cases", "Mediation_Cases"] },
+          "notificationRecipient": { "type": "string", "format": "email" },
+          "secureOutputsEnabled": { "const": true }
+        }
+      }
+    }
+  }
+}
