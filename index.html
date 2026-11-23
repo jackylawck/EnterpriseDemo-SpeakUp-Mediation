@@ -115,3 +115,202 @@
 
       <div class="tagline-box">
         <div class="tc">
+          <strong>「守住合規紅線（保密舉報）＋ 疏導日常摩擦（職場調解）之零授權雙軌治理引擎」</strong><br>
+          內建利益衝突自動繞過 HR 隔離機制與清單級權限鎖定，全面對齊 ISO 37002、ISO 27701 及香港法例。
+        </div>
+        <div class="en">
+          <strong>"Zero-License Dual-Track Governance Engine: Protected Whistleblowing + Confidential Workplace Mediation"</strong><br>
+          Enforcing automated conflict-of-interest HR bypass, SharePoint list-level RBAC isolation, and alignment with ISO 37002, ISO 27701, and Hong Kong statutory frameworks.
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>
+          <span class="tc">📌 專案摘要與雙軌治理定位</span>
+          <span class="en">📌 Executive Summary & Dual-Track Governance Positioning</span>
+        </h2>
+        <p class="tc"><strong>本儲存庫為一項企業管治示範專案，展示如何完全運用現有 Microsoft 365 標準授權（零額外 SaaS 採購成本），搭建兼具「保密舉報（Whistleblowing）」與「員工調解（Workplace Mediation）」的企業級內控平台。</strong></p>
+        <p class="en"><strong>This repository is an Enterprise Demo showcasing a Zero-License Dual-Track Governance Portal built natively on Microsoft 365 standard connectors—integrating Protected Whistleblowing and Confidential Workplace Mediation without third-party SaaS licensing costs.</strong></p>
+        <p class="tc">透過 <strong>Microsoft Forms、Power Automate、SharePoint Online 獨立權限清單及 Teams Adaptive Cards</strong>，建立「前端雙入口分流、後端高層機密匯流」的治理閉環。舉報通道對齊 <strong>ISO 37002</strong> 與香港<strong>《個人資料（私隱）條例》（第 486 章）</strong>；調解通道則融入香港<strong>《調解條例》（第 620 章）</strong>之自願、中立與「無損權利」保密原則，明確承諾調解紀錄不寫入 HR 人事檔案。</p>
+        <p class="en">Using <strong>Microsoft Forms, Power Automate, SharePoint isolated lists, and Teams Adaptive Cards</strong>, this architecture implements a closed-loop dual-track intake with automatic conflict-of-interest escalation. Whistleblowing aligns with <strong>ISO 37002</strong> and <strong>HK PDPO (Cap. 486)</strong>, while mediation incorporates the <strong>HK Mediation Ordinance (Cap. 620)</strong>—ensuring mediation records never enter HR personnel files.</p>
+      </section>
+
+      <section class="card">
+        <h2>
+          <span class="tc">🏛️ 雙軌分流與利益衝突自動隔離架構</span>
+          <span class="en">🏛️ Dual-Track Routing & Conflict-of-Interest Isolation Architecture</span>
+        </h2>
+        <div class="flow-grid">
+          <div class="flow-node">
+            <div class="flow-step"><span class="tc">入口 A • 舉報通道</span><span class="en">Track A • Whistleblowing</span></div>
+            <div class="flow-title"><span class="tc">匿名防報復舉報表單</span><span class="en">Anonymous Intake (Form-01)</span></div>
+            <p class="flow-desc"><span class="tc">關閉記錄姓名（Record Name = Off），內建防自我暴露提醒與利益衝突閘門。</span><span class="en">Identity logging disabled; embeds anti-self-identification prompts and COI gate.</span></p>
+          </div>
+          <div class="flow-node">
+            <div class="flow-step"><span class="tc">入口 B • 調解通道</span><span class="en">Track B • Mediation</span></div>
+            <div class="flow-title"><span class="tc">保密調解預約表單</span><span class="en">Mediation Booking (Form-02)</span></div>
+            <p class="flow-desc"><span class="tc">強制勾選《調解條例》第620章保密確認閘門，並篩查安全風險與 HR 迴避。</span><span class="en">Enforces Cap. 620 confidentiality gate, safety screening, and HR conflict check.</span></p>
+          </div>
+          <div class="flow-node">
+            <div class="flow-step"><span class="tc">常規路由 • HR 專區</span><span class="en">Standard Route • HR List</span></div>
+            <div class="flow-title"><span class="tc">一般舉報與常規調解</span><span class="en">Standard Cases & Caucus</span></div>
+            <p class="flow-desc"><span class="tc">未涉 HR 之個案分別寫入「一般舉報」及「員工調解預約」清單並通知 HR Head。</span><span class="en">Non-HR cases route to HR_Cases and Mediation_Cases with Teams card alerts.</span></p>
+          </div>
+          <div class="flow-node danger">
+            <div class="flow-step"><span class="tc">核心防線 • 跨軌升級</span><span class="en">COI Escalation • Bypass</span></div>
+            <div class="flow-title"><span class="tc">繞過 HR 直達最高管理層</span><span class="en">Zero-HR-Access Escalation</span></div>
+            <p class="flow-desc"><span class="tc">舉報或調解一旦勾選涉及 HR，自動寫入權限隔離之「高層機密舉報」直達老闆。</span><span class="en">Any case implicating HR routes exclusively to Boss_Only_Cases; HR is blocked.</span></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>
+          <span class="tc">🎛️ 互動式「雙軌分流與權限隔離」實戰模擬器</span>
+          <span class="en">🎛️ Interactive Dual-Track Routing & RBAC Isolation Simulator</span>
+        </h2>
+        <p class="tc">在左側模擬員工提交表單（試著勾選「涉及人力資源主管」或切換「員工調解預約」），並在右側切換 <strong>HR Head</strong> 與 <strong>Managing Director（老闆）</strong> 視角，即時驗證 SharePoint 清單權限隔離與 Teams 調適型卡片推送：</p>
+        <p class="en">Simulate an employee submission on the left, then toggle between <strong>HR Head</strong> and <strong>Managing Director</strong> views on the right to verify SharePoint list isolation and Teams Adaptive Card routing:</p>
+
+        <div class="sim-grid">
+          <div class="sim-panel">
+            <h3>1. <span class="tc">員工前端通道模擬</span><span class="en">Employee Front-End Intake</span></h3>
+            <div class="sim-field">
+              <label for="simTrack"><span class="tc">選擇提交通道：</span><span class="en">Select Governance Track:</span></label>
+              <select id="simTrack">
+                <option value="WB">Demo-Form-01：保密舉報與意見反映（匿名）</option>
+                <option value="MED">Demo-Form-02：保密員工調解預約（實名）</option>
+              </select>
+            </div>
+            <div class="sim-field">
+              <label for="simCoi"><span class="tc">【利益衝突關鍵題】事件是否涉及人力資源主管（HR Head）？</span><span class="en">[COI Gate] Does this matter implicate the HR Head?</span></label>
+              <select id="simCoi">
+                <option value="NO">否 — 由 HR Head / 認可調解員保密跟進</option>
+                <option value="YES">是 — 啟動利益衝突迴避，繞過 HR 直達最高管理層</option>
+              </select>
+            </div>
+            <div class="sim-field">
+              <label for="simCategory"><span class="tc">事件性質 / 調解類別：</span><span class="en">Case Category / Dispute Type:</span></label>
+              <select id="simCategory">
+                <option value="CAT1">利益衝突 / 違反專業操守</option>
+                <option value="CAT2">職場欺凌 / 騷擾 / 歧視</option>
+                <option value="CAT3">跨部門協作或職責界定爭議</option>
+              </select>
+            </div>
+            <div class="sim-field">
+              <label for="simSummary"><span class="tc">事件簡述（脫敏示範）：</span><span class="en">Incident Summary (Sanitized Demo):</span></label>
+              <input type="text" id="simSummary" value="反映部門採購報價審批流程存在利益衝突疑慮">
+            </div>
+            <button type="button" class="btn-submit" id="simRunBtn">
+              <span class="tc">🚀 提交表單並觸發 Power Automate 分流</span>
+              <span class="en">🚀 Submit Form & Trigger Power Automate Routing</span>
+            </button>
+          </div>
+
+          <div class="sim-panel">
+            <h3>2. <span class="tc">後台處理人視角與權限隔離驗證</span><span class="en">Backend Handler View & RBAC Verification</span></h3>
+            <div class="role-tabs">
+              <button type="button" class="role-tab active-hr" id="tabHr">
+                <span class="tc">👤 HR Head 視角</span>
+                <span class="en">👤 HR Head View</span>
+              </button>
+              <button type="button" class="role-tab" id="tabBoss">
+                <span class="tc">👑 Managing Director 老闆視角</span>
+                <span class="en">👑 Managing Director View</span>
+              </button>
+            </div>
+
+            <div class="adaptive-card-preview" id="teamsPreview">
+              <strong id="cardTitle">📋 新保密舉報通知（HR 專責跟進）</strong>
+              <p class="card-preview-desc" id="cardDesc">系統已收到一宗一般保密舉報（WB-HR-101），請於 5 個工作天內受理。</p>
+              <div class="card-preview-meta" id="cardMeta">目標清單：HR_Cases（一般舉報）｜權限：HR Head + Admin</div>
+            </div>
+
+            <div class="list-status-box">
+              <div class="list-status-header">
+                <span class="tc">SharePoint Online 三清單存取權限狀態：</span>
+                <span class="en">SharePoint Online 3-List RBAC Visibility:</span>
+              </div>
+              <div class="list-row">
+                <span>List 1: <code>HR_Cases</code> (<span class="tc">一般舉報</span><span class="en">Standard WB</span>)</span>
+                <span id="permList1" class="status-ok">✅ 可讀取 / 編輯</span>
+              </div>
+              <div class="list-row">
+                <span>List 2: <code>Boss_Only_Cases</code> (<span class="tc">高層機密</span><span class="en">Executive COI</span>)</span>
+                <span id="permList2" class="status-locked">🔒 停止繼承權限（完全隱形）</span>
+              </div>
+              <div class="list-row">
+                <span>List 3: <code>Mediation_Cases</code> (<span class="tc">調解預約</span><span class="en">Mediation</span>)</span>
+                <span id="permList3" class="status-ok">✅ 可讀取 / 編輯</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>
+          <span class="tc">📋 國際標準與香港法例合規對照矩陣</span>
+          <span class="en">📋 International Standards & Hong Kong Statutory Compliance Matrix</span>
+        </h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th><span class="tc">合規基準 / 法例</span><span class="en">Standard / Statute</span></th>
+                <th><span class="tc">核心治理要求</span><span class="en">Governance Requirement</span></th>
+                <th><span class="tc">本系統技術落實機制（Governance-as-Code）</span><span class="en">Technical Implementation</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>ISO 37002:2021</strong><br><span class="role-badge"><span class="tc">吹哨管理系統</span><span class="en">Whistleblowing</span></span></td>
+                <td><span class="tc">保護舉報人身份、利益衝突迴避、防止報復行為。</span><span class="en">Whistleblower protection, COI impartiality, and anti-retaliation.</span></td>
+                <td><span class="tc">表單關閉帳號紀錄；內建利益衝突閘門，涉及 HR 自動繞過並隔離於 <code>Boss_Only_Cases</code>。</span><span class="en">Anonymous intake; automated COI gate routes HR-implicated cases exclusively to <code>Boss_Only_Cases</code>.</span></td>
+              </tr>
+              <tr>
+                <td><strong>HK PDPO (Cap. 486)</strong><br><span class="role-badge"><span class="tc">個人資料私隱條例</span><span class="en">Data Privacy</span></span></td>
+                <td><span class="tc">收集資料目的聲明（DPP1）、資料保安（DPP4）及資料保留期限（DPP2）。</span><span class="en">Purpose specification (DPP1), data security (DPP4), and retention limits (DPP2).</span></td>
+                <td><span class="tc">表單開篇嵌入 PICS 聲明；開啟 Power Automate <code>Secure Outputs</code> 防日誌明文洩漏；清單獨立權限鎖定。</span><span class="en">Embedded PICS notice; Power Automate <code>Secure Outputs</code> enabled; broken permission inheritance on SharePoint lists.</span></td>
+              </tr>
+              <tr>
+                <td><strong>HK Mediation Ord. (Cap. 620)</strong><br><span class="role-badge"><span class="tc">調解條例精神</span><span class="en">Mediation</span></span></td>
+                <td><span class="tc">調解自願性、調解員中立性及「無損權利」保密原則。</span><span class="en">Voluntary participation, mediator neutrality, and "without prejudice" confidentiality.</span></td>
+                <td><span class="tc">調解表單設雙重法定原則必選閘門；制度明確隔離調解紀錄與 HR 人事檔案。</span><span class="en">Mandatory dual-checkbox agreement gate prior to submission; strict separation from HR personnel files.</span></td>
+              </tr>
+              <tr>
+                <td><strong>ISO/IEC 27701</strong><br><span class="role-badge"><span class="tc">隱私資訊管理</span><span class="en">PIMS</span></span></td>
+                <td><span class="tc">最小權限原則（Least Privilege）與資料最小化（Data Minimization）。</span><span class="en">Least privilege access control and PII minimization.</span></td>
+                <td><span class="tc">舉報表單僅收集必要事件描述，聯絡方式設為選填；三張清單各自獨立管理存取白名單。</span><span class="en">Optional contact fields for anonymous follow-up; granular role-based access per SharePoint list.</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="artifact-links">
+          <a href="docs/forms-design-and-branching.md"><span class="tc">雙問卷設計與利益衝突閘門</span><span class="en">Forms & COI Gate Design</span></a>
+          <a href="docs/sharepoint-permissions-matrix.md"><span class="tc">SharePoint 權限隔離矩陣</span><span class="en">SharePoint RBAC Matrix</span></a>
+          <a href="docs/adaptive-cards-templates.md"><span class="tc">Teams 調適型卡片範本</span><span class="en">Adaptive Cards JSON</span></a>
+          <a href="flows/Flow1_Whistleblowing_Routing.json"><span class="tc">流程一：舉報分流 JSON</span><span class="en">Flow 1: Whistleblowing JSON</span></a>
+          <a href="flows/Flow2_WorkplaceMediation_Intake.json"><span class="tc">流程二：調解預約 JSON</span><span class="en">Flow 2: Mediation JSON</span></a>
+          <a href="schemas/speakup_mediation_governance_schema.json"><span class="tc">治理數據結構 Schema</span><span class="en">Governance JSON Schema</span></a>
+          <a href="SECURITY.md"><span class="tc">資安與脫敏政策</span><span class="en">Security & Sanitization Policy</span></a>
+        </div>
+      </section>
+    </main>
+    
+    <footer>
+      <p>
+        <span class="tc">© 2026 Enterprise Demo Framework. 採 MIT License 授權發佈。</span>
+        <span class="en">© 2026 Enterprise Demo Framework. Released under the MIT License.</span>
+      </p>
+      <p class="disclaimer">
+        <span class="tc"><strong>免責聲明：</strong>本專案為企業管治與低代碼架構研究而設之通用示範（Enterprise Demo），文中所使用之數據、機構名稱、表單識別碼（GUID）及端點網址均為虛擬或脫敏佔位符。</span>
+        <span class="en"><strong>Disclaimer:</strong> This project is a generic enterprise demo created for architectural and governance research. All data, organizational names, Form GUIDs, and endpoints used are fictional or generic placeholders.</span>
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
